@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bookmarkAPP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color:ghostwhite;
+            padding: 30px;
+            background-image: url('https://images.unsplash.com/photo-1624897527583-7d1c6087ecb8?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1925&q=80');
+            background-size: cover;
+        }
+        
+        .btn-block {
+          display: block !important;
+          text-align: center !important;
+          width: 100% !important;
+        }
+        .content {
+          font-size: 19px;
+          line-height: 1.5;
+          max-width: 500px;
+          margin: 0 auto;
+          position: relative;
+          border-radius: 5px;
+          
+        }
+        .floater {
+          background: #FFFFFF;
+          transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.4) all;
+          margin-bottom: 30px;
+        }
+
+        .floater input[type=text] {
+          padding: 30px 20px;
+          border: none;
+          box-shadow: none;
+          font-size: 14px;
+          transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.4) all;
+        }
+
+        .floater-bottom {
+          padding: 6px 10px 7px;
+          text-align: right;
+          border-top: 1px solid #DDD;
+        }
+
+        .floater-bottom button {
+          padding: 4px 8px;
+          font-size: 11px;
+        }
+
+        .overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          background: rgba(0, 0, 0, 0.80);
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          transition: 0.3s ease opacity;
+          /*pointer-events: none; */
+        }
+
+        body.show-floater .floater {
+          transform: scale(1.1);
+        }
+
+        body.show-floater .floater input[type=text] {
+          padding: 50px 20px;
+          font-size: 18px;
+        }
+
+        body.show-flaoter .overlay {
+          opacity: 1;
+          /*pointer-events: all; */
+        }
+
+        .bookmark {
+          display: flex;
+          position: relative;
+          background: #FFFFFF;
+          color: #999;
+          padding: 20px;
+          border-bottom: 1px solid #DDD;
+          font-size: 16px;
+          /* border-radius: 5px; */
+        }
+
+        .bookmark:hover {
+          color: #1CE;
+          text-decoration: none;
+        }
+
+        .bookmark:first-child {
+          border-top-left-radius: 5px;
+          border-top-right-radius: 5px;
+        }
+        .bookmark:last-child {
+          border-bottom-left-radius: 5px;
+          border-bottom-right-radius: 5px;
+          border-bottom: 0;
+        }
+
+        .bookmark .img {
+          background-color: #DDD;
+          border-radius: 3px;
+          background-image: url('https://pbs.twimg.com/profile_images/998270378664378369/nVj_2oyf_400x400.jpg');
+          background-size: cover;
+          background-position: top center;
+          width: 100px;
+          height: 60px;
+          margin-right: 20px;
+        }
+
+        .bookmark .title {
+          display: flex;
+          align-items: center;
+        }
+
+        .bookmark .icon {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          color: #CCC;
+          font-size: 12px;
+          transition: 0.3s ease color;
+          cursor: pointer;
+        }
+
+        .bookmark .icon:hover {
+          color: #888;
+        }
+        
+        
+    </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="floater content">
+    <form class="bookmark-form">
+    <div class="floater-top">
+      <input type="text" class="form-control" placeholder="What's on your mind? Enter a URL">
+    </div>
+    <div class="floater-bottom">
+      <button type="submit" class="btn btn-primary btn-sm">Add</button>
+    </div>
+  </form>
+  </div>
+
+  <div class="bookmarks-list content">
+    <!-- <a class="bookmark">I am the bookmark</a> -->
+  </div>
+  
+<script>
+    // grab evrything we need from the DOM
+    const body = document.body;
+    const input = document.querySelector('input[type=text]');
+    const overlay = document.querySelector('.overlay');
+    
+    // create the functions we need
+    function showFloater() {
+      body.classList.add('show-floater');
+
+
+    }
+
+    function closeFloater() {
+      body.classList.contains('show-floater') ? body.classList.remove('show-floater') : null;
+      /*if(body.classList.contains('show-floater')) {
+        body.classList.remove('show-floater');
+      }*/
+
+    }
+    
+    
+    // add our event listeners
+    input.addEventListener('focusin', showFloater);
+    // input.addEventListener('focusout', closeFloater);
+    overlay.addEventListener('click', closeFloater);
+
+    // ==============================================
+    // localStorage.setItem('my_thing', 'something');
+
+    const bookmarksList = document.querySelector('.bookmarks-list');
+    const bookmarkForm  = document.querySelector('.bookmark-form');
+    const bookmarkInput = bookmarkForm.querySelector('input[type=text]');
+    const bookmarks     = JSON.parse(localStorage.getItem('bookmarks')) || [];
+    const apiUrl        = 'https://opengraph.io/api/1.0/site';
+    const appId         = '58858c7bcf07b61e64257391';
+    const myUrl         = encodeURIComponent('https://fabianbrash.com/');
+
+    fillBookmarksList(bookmarks);
+    // console.table(bookmarks);
+    
+    function createBookmark(e) {
+      e.preventDefault();
+
+      if(!bookmarkInput.value) {
+        alert('We need info!');
+        return;
+      }
+
+      const url = encodeURIComponent(bookmarkInput.value);
+
+      fetch(`${apiUrl}/${url}?app_id=${appId}`)
+      // fetch(apiUrl + '/' + url + '?app_id=' + appId)
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log(data);
+
+         // add a new bookmark to bookmarks
+      // const title        = bookmarkInput.value;
+      const bookmark     = {
+        title: data.hybridGraph.title,
+        image: data.hybridGraph.image,
+        link:  data.hybridGraph.url,
+      }
+
+      bookmarks.push(bookmark);
+      fillBookmarksList(bookmarks);
+      storeBookmarks(bookmarks);
+      bookmarkForm.reset();
+
+    })
+    .catch((error) => {
+        alert('There was a problem getting info!');
+    });
+
+      // console.table(bookmarks);
+
+      // save that bookmarks to localStorage
+
+      /* const title        = bookmarkInput.value;
+      const bookmark     = document.createElement('a');
+      bookmark.className = 'bookmark';
+      bookmark.innerText = title;
+      bookmark.href      = "#";
+      bookmark.target    = '_blank';
+      console.log(bookmark);
+
+      bookmarksList.appendChild(bookmark); */
+
+      //console.log('Processing the form...');
+    
+    }
+
+    function fillBookmarksList(bookmarks = []) {
+        // we can use const here instead of let because map does not mutate bookmarks
+        // at returns a new array 
+        const bookmarksHtml = bookmarks.map((bookmark, i) => {
+          return `
+          <a href="${bookmark.link}" class="bookmark" data-id="${i}">
+            <div class="img" style="background-image:url('${bookmark.image}')"></div>
+            <div class="title">${bookmark.title}</div>
+            <i class="bi bi-bookmark-x icon"></i>
+          </a>
+          `;
+        }).join('');
+        bookmarksList.innerHTML = bookmarksHtml; 
+        /* let bookmarksHtml = '';
+        for(i = 0; i < bookmarks.length; i++) {
+          bookmarksHtml += `
+            <a href="#" class="bookmark">
+              ${bookmarks[i].title}
+            </a>
+          
+          `;
+        } */
+        // console.log(bookmarksHtml);
+        
+    }
+
+    function removeBookmark(e) {
+      // console.log(e);
+
+      if(!e.target.matches('.icon')) return;
+
+      // find the index of the bookmark
+      // remove from the bookmarks using splice
+      // store back in localStorage
+
+      // console.log('hello');
+      const index = e.target.parentNode.dataset.id;
+
+      bookmarks.splice(index, 1);
+      fillBookmarksList(bookmarks);
+      storeBookmarks(bookmarks);
+
+      // console.dir(index);
+      
+    }
+
+    function storeBookmarks(bookmarks = []) {
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    }
+    bookmarkForm.addEventListener('submit', createBookmark);
+    bookmarksList.addEventListener('click', removeBookmark);
+    
+
+</script>
+
+
+</body>
+</html>
